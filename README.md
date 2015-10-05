@@ -1,4 +1,4 @@
-# Passport-Google-Plus
+# Passport-UCWA
 
 [Passport](http://passportjs.org/) strategies for authenticating to Microsoft UCWA web services, and creating a UCWA application.
 

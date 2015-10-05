@@ -8,8 +8,8 @@
     "type": "git",
     "url": "https://github.com/sstadelman/passport-ucwa.git"
   },
-  "version": "0.0.1",
-  "main": "./lib/strategy",
+  "version": "0.0.3",
+  "main": "./lib",
   "dependencies": {
     "passport-strategy": "^1.0.0",
     "util": "^0.10.3",

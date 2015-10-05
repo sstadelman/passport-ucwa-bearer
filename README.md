@@ -9,11 +9,7 @@ This module lets you integrate MS UCWA web services in your Node.js applications
     $ npm install passport-ucwa
  
 
-## Usage for [Web Server-Side Flow](https://developers.google.com/+/web/signin/server-side-flow)
-
-### Important note
-
-In the [Google Developers Console](https://console.developers.google.com/) make sure you have enabled the Google Plus API, otherwise your calls will fail (seen in [this issue](https://github.com/jaredhanson/passport-google-oauth/pull/45#issuecomment-52711960)).
+## Usage for nodejs application
 
 #### Configure Strategy
 
@@ -21,119 +17,66 @@ The strategy accepts a callback which is called after the user has been authenti
 profile and OAuth credentials can be saved or mapped to a user record.
 
 ```js
-var GooglePlusStrategy = require('passport-google-plus');
+var UcwaStrategy = require('@sstadelman/passport-ucwa').UcwaStrategy;
 
-passport.use(new GooglePlusStrategy({
-    clientId: 'YOUR_CLIENT_ID',
-    clientSecret: 'YOUR_CLIENT_SECRET'
-  },
-  function(tokens, profile, done) {
-    // Create or update user, call done() when complete...
-    done(null, profile, tokens);
-  }
-));
+passport.use(new UcwaStrategy({passReqToCallback: true},
+  function(req, username, password, done) {
+	  
+	  var registerApp = {
+					culture : "en-us",
+					endpointId : "2d9dc28d-stan-4035-825c-feb64be28e4e",
+					userAgent : "NodeJs client"
+				};
+					
+	  asyncRequest = asyncRequest.defaults({
+					headers: {Authorization: req.user.token.token_type + ' ' + req.user.token.access_token}
+				});
+				
+	  asyncRequest.post(req.user.urls.applications, {body: registerApp, json:true})
+	  .then(function(app) {
+	  		if (app._embedded.me.emailAddresses.indexOf(req.user.email) > -1) {
+	  			console.log('success matching email address' + util.inspect(app));
+	  			req.user.app = app;
+	  			done(null, req.user);
+	  		} else {
+	  			console.log('failed matching email address' + util.inspect(app._embedded.me.emailAddresses) + '\nemail: ' + req.user.email);
+	  			done(null, false);
+	  		}
+	  })
+	  .catch(function(){
+	  	console.log('failed');
+	  	done(null, false);
+	  })
+	  
+}));
 ```
     
-#### Configure Google+ Sign-In Button
+#### Authentication Request
+The Mobile Application or browser should authenticate to the nodejs application by invoking `POST /login`, passing the user email address in the POST body.
 
-```html
-<!-- Add where you want your sign-in button to render -->
-<div id="signinButton">
-  <span class="g-signin"
-    data-scope="https://www.googleapis.com/auth/plus.login"
-    data-clientid="YOUR_CLIENT_ID"
-    data-redirecturi="postmessage"
-    data-accesstype="offline"
-    data-cookiepolicy="single_host_origin"
-    data-callback="signInCallback">
-  </span>
-</div>
-<div id="result"></div>
+```
+POST /login HTTP/1.1
+Host: localhost:9000
+Authorization: Basic R0xPQkFMXWISLisjnleIO8345NCBGdCZpTA==
+Content-Type: application/json
+Cache-Control: no-cache
+
+{ "email" : "stan.stadelman@sap.com" }
 ```
 
 
-#### Handle the callback & forward the authorization code
+#### Protect `/login` endpoint with UCWAStrategy, and return signed JWTToken
 
 ```js
-function signInCallback(authResult) {
-  if (authResult.code) {
-    $.post('/auth/google/callback', { code: authResult.code})
-    .done(function(data) {
-      $('#signinButton').hide();
-    }); 
-  } else if (authResult.error) {
-    console.log('There was an error: ' + authResult.error);
-  }
-};
+app.post('/login', 
+	passport.authenticate('ucwa', { session: true }),
+	function(req, res) {
+
+	fetchUser(req.user.email, pluck_token_user)
+	.then(function(user) {
+		var token = jwt.sign(user, jwtSecret, { expiresInMinutes: 60*5 });
+			res.json({token: token});
+	})
+});	
 ```
 
-#### Authenticate Requests
-
-Use `passport.authenticate()`, specifying the `'google'` strategy, to
-authenticate requests.
-
-For example, as route middleware in an [Express](http://expressjs.com/)
-application:
-
-```js
-app.post('/auth/google/callback', passport.authenticate('google'), function(req, res) {
-    // Return user back to client
-    res.send(req.user);
-});
-```
-
-## Usage for [Web Client-Side Flow](https://developers.google.com/+/web/signin/#using_the_client-side_flow)
-
-Client-side flows are also supported for web & mobile using ID tokens. When using ID tokens, profile 
-data is limited to public information.
-
-#### Configure Strategy
-
-The strategy accepts a callback which is called after the user has been authenticated. The
-profile and OAuth credentials can be saved or mapped to a user record.
-
-```js
-var GooglePlusStrategy = require('passport-google-plus');
-
-passport.use(new GooglePlusStrategy({
-    clientId: 'YOUR_CLIENT_ID',
-    apiKey: 'YOUR_API_KEY'
-  },
-  function(tokens, profile, done) {
-    // Create or update user, call done() when complete...
-    done(null, profile, tokens);
-  }
-));
-```
-
-#### Configure Google+ Sign-In Button
-
-```html
-<!-- Add where you want your sign-in button to render -->
-<div id="signinButton">
-  <span class="g-signin"
-    data-scope="https://www.googleapis.com/auth/plus.login"
-    data-clientid="YOUR_CLIENT_ID"
-    data-redirecturi="postmessage"
-    data-accesstype="online"
-    data-cookiepolicy="single_host_origin"
-    data-callback="signInCallback">
-  </span>
-</div>
-<div id="result"></div>
-```
-
-#### Handle the callback & forward the identity token
-
-```js
-function signInCallback(authResult) {
-  if (authResult.code) {
-    $.post('/auth/google/callback', { id_token: authResult.id_token})
-    .done(function(data) {
-      $('#signinButton').hide();
-    }); 
-  } else if (authResult.error) {
-    console.log('There was an error: ' + authResult.error);
-  }
-};
-```

@@ -1,0 +1,30 @@
+{
+  "name": "passport-ucwa",
+  "description": "Passport strategy for UCWA web services",
+  "contributors": [
+    {
+      "name": "Stan Stadelman",
+      "email": "stan.stadelman@sap.com"
+    }
+  ],
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/sstadelman/passport-ucwa.git"
+  },
+  "version": "0.0.1",
+  "main": "./lib/strategy",
+  "dependencies": {
+    "passport-strategy" : "^1.0.0",
+    "util" : "^0.10.3",
+    "request-promise" : "^0.4.3",
+    "q" : "^1.4.x"
+  },
+  "devDependencies": {
+  },
+  "keywords": [
+    "ucwa",
+    "lync",
+    "passport"
+  ],
+  "license": "unlicensed"
+}

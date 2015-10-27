@@ -1,14 +1,14 @@
 {
-  "name": "@sstadelman/passport-ucwa",
+  "name": "@sstadelman/passport-ucwa-bearer",
   "description": "Passport strategy for UCWA web services",
   "contributors": [
     "Stan Stadelman <stan.stadelman@sap.com>"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sstadelman/passport-ucwa.git"
+    "url": "https://github.com/sstadelman/passport-ucwa-bearer.git"
   },
-  "version": "0.0.3",
+  "version": "0.0.8",
   "main": "./lib",
   "dependencies": {
     "passport-strategy": "^1.0.0",
@@ -24,9 +24,9 @@
   ],
   "license": "Unlicense",
   "bugs": {
-    "url": "https://github.com/sstadelman/passport-ucwa/issues"
+    "url": "https://github.com/sstadelman/passport-ucwa-bearer/issues"
   },
-  "homepage": "https://github.com/sstadelman/passport-ucwa",
+  "homepage": "https://github.com/sstadelman/passport-ucwa-bearer",
   "directories": {
     "example": "examples",
     "test": "tests"
